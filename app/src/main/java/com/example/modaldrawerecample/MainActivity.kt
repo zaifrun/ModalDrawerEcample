@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.modaldrawerecample.commonui.MenuItem
+import com.example.modaldrawerecample.data.Repository
 import com.example.modaldrawerecample.models.MenuItemModel
 import com.example.modaldrawerecample.ui.theme.ModalDrawerEcampleTheme
 import kotlinx.coroutines.launch
@@ -50,41 +53,6 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var items = mutableListOf<MenuItemModel>()
-        var context = this
-
-        items.add(
-            MenuItemModel(
-                id = "1",
-                title = "Home",
-                iconVector = Icons.Default.Home,
-                contentDescription = "home", onclick = {
-                    Log.d("test", "home clicked")
-                })
-        )
-        items.add(
-            MenuItemModel(
-                id = "2",
-                title = "Settings",
-                iconVector = Icons.Default.Settings,
-                contentDescription = "home", onclick = {
-                    Log.d("test", "settings clicked")
-                })
-        )
-        items.add(
-            MenuItemModel(
-                id = "3",
-                title = "Vactions",
-                iconVector = Icons.Default.AccountBox,
-                contentDescription = "vacation", onclick = {
-
-                    Log.d("test", "vacation clicked clicked")
-                    /* val intent = Intent(context, VacationActivity::class.java)
-                     context.startActivity(intent)*/
-
-
-                })
-        )
         setContent {
             ModalDrawerEcampleTheme {
                 val scope = rememberCoroutineScope()
@@ -99,21 +67,9 @@ class MainActivity : ComponentActivity() {
                                 color = Color.Blue
                             )
                             {
-                                //Drawer(title = "My menu", menuItems = items)
-                                 Column {
-                                     Text(
-                                         "Text in Drawer",
-                                         color = Color.White
-                                     )
-                                     Button(onClick = {
-                                         scope.launch {
-                                             drawerState.close()
-                                         }
-                                     }) {
-                                         Text("Close Drawer")
-                                     }
-                                 }
 
+                                val items = Repository.getMenuItems()
+                                Drawer(title = "My Menu", menuItems = items)
                             }
                         }
                     },
@@ -135,31 +91,40 @@ class MainActivity : ComponentActivity() {
                         })
                     },
                     content =
-                    { padding ->
-                        Column(modifier = Modifier.padding(padding)) {
-                            Text("Main screen")
-                            Button(onClick = {
+                    {
+                            padding -> MainContent(padding = padding,drawerState)
 
-                                scope.launch {
-                                    drawerState.open()
-                                }
-
-                            }) {
-                                Text("Click to open")
-                            }
-                            Greeting("Hello from my composable")
-                            Greeting(
-                                "Hello from my composable",
-                                modifier = Modifier.background(color = Color.Red)
-                            )
-
-                        }
                     })
             }
             )
         }
     }
 }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable fun MainContent(padding: PaddingValues, drawerState:DrawerState)
+{
+    val scope = rememberCoroutineScope()
+    Column(modifier = Modifier.padding(padding)) {
+        Text("Main screen")
+        Button(onClick = {
+
+            scope.launch {
+                drawerState.open()
+            }
+
+        }) {
+            Text("Click to open")
+        }
+        Greeting("Hello from my composable")
+        Greeting(
+            "Hello from my composable",
+            modifier = Modifier.background(color = Color.Red)
+        )
+
+    }
+
 }
 
 
@@ -179,25 +144,8 @@ fun DrawerHeader(title: String) {
 @Preview
 @Composable
 fun DrawerPreview() {
-    var items = mutableListOf<MenuItemModel>()
-    items.add(
-        MenuItemModel(
-            id = "1",
-            title = "Home",
-            iconVector = Icons.Default.Home,
-            contentDescription = "home", onclick = {
-                Log.d("test", "home clicked")
-            })
-    )
-    items.add(
-        MenuItemModel(
-            id = "2",
-            title = "Settings",
-            iconVector = Icons.Default.Settings,
-            contentDescription = "home", onclick = {
-                Log.d("test", "settings clicked")
-            })
-    )
+    var items = Repository.getMenuItems()
+
     Drawer(title = "My Menu", menuItems = items)
 }
 
